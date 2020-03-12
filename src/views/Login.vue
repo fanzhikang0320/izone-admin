@@ -1,5 +1,9 @@
 <template>
   <div class="login-wrapper">
+      <div class="head">
+          <img src='../assets/img/izone.jpg' alt="">
+          <h1>后台管理</h1>
+      </div>
       <el-form :model="formData" :rules="rules" ref="ruleForm" label-width="100px" status-icon class="form-wrapper">
           <el-form-item label="管理员账号" prop="account">
               <el-input type="text" v-model="formData.account" placeholder="请输入管理员账号"></el-input>
@@ -11,7 +15,7 @@
               <el-checkbox v-model="checked">记住密码</el-checkbox>
           </el-form-item>
           <el-form-item>
-              <el-button type="success" @click="submitForm" :loading="isLoading">{{text}}</el-button>
+              <el-button type="success" @click="submitForm" :loading="isLoading" class="btn">{{text}}</el-button>
           </el-form-item>
       </el-form>
   </div>
@@ -95,11 +99,31 @@ export default {
     max-width: 1024px;
     min-width: 1024px;
     margin: 0 auto;
-    background-color: aqua;
+}
+.login-wrapper .head {
+    display: flex;
+    background-color: #fff;
+    margin-bottom: 70px;
+    margin-top: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed rgb(230, 228, 228);
+}
+.login-wrapper .head  img {
+    margin-left: 35px;
+}
+.login-wrapper .head h1 {
+    letter-spacing: 1em;
+    margin-left: 130px;
+    
 }
 .form-wrapper {
     width: 500px;
-    border: 1px solid #000;
     margin: 0 auto;
+    padding: 40px 20px 10px 10px;
+    background-color: rgb(243, 240, 240);
+    border-radius: 4px;
+}
+.btn {
+    width: 120px;
 }
 </style>

@@ -16,11 +16,11 @@
                 class="avatar-uploader"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
-                :on-error="uploadAvatarError"
                 :on-change="uploadAvatarChange"
-                action="223"
+                action="/api/insertOtherImg"
                 :auto-upload="false"
                 :multiple="false"
+                name="img"
                 ref="uploadImg"
                 :file-list="imgFileList"
                 accept="image/*"
@@ -43,45 +43,60 @@
             </el-form-item>
                         <el-form-item label="项目文件">
               <el-upload
-                action="hkjh123"
+                action="/api/insertOtherZip"
                 ref="uploadFile"
                 :auto-upload= "false"
                 :on-success="uploadFileSuccess"
-                :on-error="uploadFileError"
                 :on-change="uploadFileChange"
                 :on-remove="removeFile"
                 :multiple="false"
+                name="otherZip"
                 :file-list="zipFileList"
                 accept="application/zip"
               >
                   <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                  <div slot="tip">暂只支持zip格式文件，且不超过20M</div>
+                  <div slot="tip">暂只支持zip格式文件，且不超过50M</div>
               </el-upload>
             </el-form-item>
 
             <el-form-item>
               <el-button type="info" @click="clearData">清空</el-button>
-              <el-button type="primary" @click="submitData">发布</el-button>
+              <el-button type="primary" @click="submitData" :loading="isLoading">{{isLoading ? '发布中...' : '发布'}}</el-button>
             </el-form-item>
           </el-form>
         </div>
 
         <!-- 展示区域 -->
-        <div>
+        <div class="case-wrapper">
             <el-row class="rows">
               <el-col :span="6">项目名称</el-col>
               <el-col :span="6">作者</el-col>
               <el-col :span="6">发布时间</el-col>
               <el-col :span="6">操作</el-col>
             </el-row>
-            <el-row class="rows">
-              <el-col :span="6">啦啦啦啦啦啦啦啦啦啦</el-col>
-              <el-col :span="6">啦啦啦啦啦啦啦啦啦啦</el-col>
-              <el-col :span="6">2020-03-08</el-col>
-              <el-col :span="6">
-                <el-button type="danger" size="mini">删除</el-button>
-              </el-col>
-            </el-row>
+            <div class="showCaseInfo" v-loading="isLoadingCase">
+              <el-row class="rows" v-for="(item,index) in caseInfo" :key="index">
+                <el-col :span="6">{{item.name}}</el-col>
+                <el-col :span="6">{{item.author}}</el-col>
+                <el-col :span="6">{{item.ctime}}</el-col>
+                <el-col :span="6">
+                  <el-button type="danger" size="mini" @click="deleteCase(item.id,item.imgpath,item.packagePath,index)">删除</el-button>
+                </el-col>
+              </el-row>
+              <div class="nomore" v-show="isShowNoMore">
+                sorry！ 我也是有底线的 ┐(-｡ｰ;)┌
+              </div>
+            </div>
+            <el-pagination
+              background
+              prev-click
+              :hide-on-single-page=true
+              @current-change="pageChange" 
+              layout="prev, pager, next"
+              :page-size="this.pageSize"
+              class="pagination"
+              :total="this.total">
+            </el-pagination>
         </div>
       </el-col>
     </el-row>
@@ -90,6 +105,7 @@
 </template>
 
 <script>
+import { setTimeout } from 'timers';
 export default {
   data() {
     var validateName = (rule,value,callback) => {
@@ -119,7 +135,9 @@ export default {
         name: '',
         author: '',
         url: '',
-        desc: ''
+        desc: '',
+        imgpath: '',
+        zipPath: ''
       },
       imgurl: '',  
       rules: {
@@ -137,6 +155,13 @@ export default {
       },
       imgFileList: [],
       zipFileList: [],
+      isLoading: false,
+      caseInfo: [] , //要渲染的案例信息
+      isLoadingCase: false,
+      total: 100, 
+      pageSize: 20,
+      start: 1,
+      isShowNoMore: false
     }
   },
   methods: {
@@ -150,23 +175,19 @@ export default {
         //生成预览路径
         this.imgurl = URL.createObjectURL(file.raw);
         this.imgFileList = fileList;
-        window.console.log(file,fileList);
       }
     },
-    // 上传图片失败
-    uploadAvatarError(res,file) {
-      window.console.log(res,file);
-    },
     //图片上传成功
-    handleAvatarSuccess(res,file) {
-      window.console.log(res,file);
+    handleAvatarSuccess(res) {
+      if (res.type == 'success') {
+        this.formData.imgpath = res.data;
+      }
     },
     //添加压缩包
     uploadFileChange(file,fileList) {
-      window.console.log(fileList);
       if (file.status == 'ready') {
-        if (file.size > 1) {
-          this.$confirm('请选择不超过20M大小的压缩包文件!','提示',{
+        if (file.size > 50 * 1024) {
+          this.$confirm('请选择不超过50M大小的压缩包文件!','提示',{
             type: 'warning',
             showConfirmButton: false,
             showCancelButton: false
@@ -177,22 +198,17 @@ export default {
         fileList.push(file);
         this.zipFileList = fileList;
       }
-      window.console.log('aaa',file,fileList);
     },
     //移除要上传的压缩包时
     removeFile() {
       this.zipFileList = [];
     },
     //压缩包文件上传成功
-    uploadFileSuccess(res,file) {
-      window.console.log(res,file);
+    uploadFileSuccess(res) {
+      if (res.type == 'success') {
+        this.formData.zipPath = res.data;
+      }
     },
-    //压缩包上传失败
-    uploadFileError(res,file) {
-      window.console.log(res,file);
-    },
-    
-    
     //清除所有数据
     clearData() {
       this.imgFileList = [];
@@ -201,7 +217,6 @@ export default {
     },
     //最后提交数据
     submitData() {
-      window.console.log('最终上传的数据：',this.imgFileList,this.zipFileList);
         //判断有没有上传图片和压缩包
         if (this.imgFileList.length == 0) {
           this.$message({
@@ -217,16 +232,110 @@ export default {
           })
           return;
         }
-        this.$refs.form.validate((valid) => {
-          if (valid) {
-            window.console.log(this.formData)
-            
-        // this.$refs.uploadImg.submit();
-        // this.$refs.uploadFile.submit();
-          }
-        })
-    }
+        this.postData();
 
+    },
+    postData() {
+      this.isLoading = true;
+      var time = null;
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          this.$refs.uploadImg.submit();
+          this.$refs.uploadFile.submit();
+          // 放到异步去执行，主要是解决必须先等到压缩包和图片上传完毕才可以
+          time = setTimeout(() => {
+            if (this.formData.imgpath != '' || this.formData.zipPath != '') {
+              this.axios.post('/api/insertOtherContent',this.formData)
+                .then((res) => {
+                  this.isLoading = false;
+                  if (res.data.type == 'success') {
+                      this.$message({
+                        type: 'success',
+                        message: '发布成功！'
+                      })
+                  } else {
+                    this.$message({
+                      type: 'error',
+                      message: '发布失败，请稍后再试！'
+                    })
+                  }
+                })
+              time = 0;
+              return;
+            } else {
+              this.$message({
+                type: 'error',
+                message: '图片或压缩包上传失败！'
+              })
+            }
+            clearTimeout(time)
+          },1000)
+          
+          
+          
+
+          
+        }
+      })
+    },
+    async getCaseInfo(start) {
+      this.isLoadingCase = true;
+        var res = await this.axios.get('/api/getOtherData',{params: {start: (start - 1)* this.pageSize,limit: this.pageSize}})
+        if (res.data.type == 'success') {
+          this.isLoadingCase = false;
+          this.isShowNoMore = false;
+          this.total = res.data.count;
+          if (res.data.data.length  < this.pageSize) {
+            this.isShowNoMore = true;
+          }
+          this.caseInfo = res.data.data;
+        } else {
+          this.isLoadingCase = false;
+          this.$message({
+            type: 'error',
+            message: '服务端可能发生了错误！'
+          })
+        }
+    },
+    async deleteCase(id,imgpath,packagePath,index) {
+      this.$confirm('你确定要删除此项目吗？','提示',{
+        type: 'warning',
+        confirmButtonText: '是的',
+        cancelButtonText: '再想想'
+      }).then(() => {
+        this.axios.post('/api/deleteCase',{id: id, imgpath: imgpath, packagePath: packagePath})
+          .then((res) => {
+            window.console.log(res);
+            if (res.data.type == 'success') {
+              this.$message({
+                type:'success',
+                message: '删除成功！'
+              })
+              this.caseInfo.splice(index,1);
+              this.total = this.total - 1;
+
+            } else {
+              this.$message({
+                type: 'error',
+                message:'删除失败，请刷新重试！'
+              })
+            }
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'warning',
+          message: '取消操作'
+        })
+      })
+      
+    },
+    pageChange(currentPage) {
+      this.start = currentPage;
+      this.getCaseInfo(this.start);
+    }
+  },
+  created() {
+    this.getCaseInfo(this.start)
   }
 }
 </script>
@@ -256,11 +365,7 @@ export default {
   height: 100px;
   display: block;
 }
-.rows {
-  /* height: 45px;
-  border: 1px solid #000; */
-  background-color: #ccc;
-}
+
 .rows .el-col {
   height: 45px;
   text-align: center;
@@ -271,4 +376,32 @@ export default {
   font-size: 14px;
   
 }
+.case-wrapper {
+  color: #fff;
+}
+.rows {
+  border-bottom: 1px solid #f1d9d9;
+  background-color: #57abff;
+  
+}
+.showCaseInfo {
+  background-color: #fff;
+  min-height: 920px;
+  color: #45484e;
+}
+.showCaseInfo .el-row:nth-child(odd) {
+  background-color: #d4e2bb;
+}
+.showCaseInfo .el-row:nth-child(even) {
+  background-color: #fff;
+}
+.nomore {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 15px;
+  color: #a55c5c;
+  background-color: #fbc1c1;
+}
+
 </style>

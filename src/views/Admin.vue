@@ -1,7 +1,8 @@
 <template>
   <div class="index-wrapper">
       <div class="title-box">
-          <h1>izone管理中心</h1>
+          <img src="../assets/img/izone.jpg" alt="">
+          <h1>管理中心</h1>
       </div>
       
       <el-tabs tab-position="left">
@@ -33,17 +34,6 @@ export default {
         Other,
         Diary,
         Bulletin
-    },
-    data() {
-        return {
-
-        }
-    },
-    methods: {
-
-    },
-    created() {
-
     }
 }
 </script>
@@ -53,7 +43,25 @@ export default {
     width: 1024px;
     max-width: 1024px;
     min-width: 1024px;
-    background-color: rgb(180, 176, 176);
+    background-color: rgba(236, 231, 231, 0.582);
     margin: 0 auto;
+}
+.title-box {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+    border-bottom: 2px dashed rgb(207, 204, 204);
+    background-color: #Fff;
+    padding-bottom: 40px;
+    margin-top: 30px;
+}
+.title-box img {
+    display: inline-block;
+    height: 70px;
+    margin: 0 40px;
+}
+.title-box h1 {
+    margin-left: 100px;
+    letter-spacing: 1em;
 }
 </style>
