@@ -17,7 +17,7 @@
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :on-change="uploadAvatarChange"
-                action="/api/insertOtherImg"
+                action="http://127.0.0.1:8081/api/insertOtherImg"
                 :auto-upload="false"
                 :multiple="false"
                 name="img"
@@ -43,7 +43,7 @@
             </el-form-item>
                         <el-form-item label="项目文件">
               <el-upload
-                action="/api/insertOtherZip"
+                action="http://127.0.0.1:8081/api/insertOtherZip"
                 ref="uploadFile"
                 :auto-upload= "false"
                 :on-success="uploadFileSuccess"
@@ -213,7 +213,8 @@ export default {
     clearData() {
       this.imgFileList = [];
       this.zipFileList = [];
-      this.$refs.form.resetFileds(); 
+      this.$refs.form.resetFields(); 
+      this.imgurl = '';
     },
     //最后提交数据
     submitData() {
@@ -248,6 +249,7 @@ export default {
               this.axios.post('/api/insertOtherContent',this.formData)
                 .then((res) => {
                   this.isLoading = false;
+                  this.clearData();
                   if (res.data.type == 'success') {
                       this.$message({
                         type: 'success',
