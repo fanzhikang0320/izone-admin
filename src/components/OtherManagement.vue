@@ -17,7 +17,7 @@
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :on-change="uploadAvatarChange"
-                action="http://127.0.0.1:8081/api/insertOtherImg"
+                action="/api/insertOtherImg"
                 :auto-upload="false"
                 :multiple="false"
                 name="img"
@@ -43,7 +43,7 @@
             </el-form-item>
                         <el-form-item label="项目文件">
               <el-upload
-                action="http://127.0.0.1:8081/api/insertOtherZip"
+                action="/api/insertOtherZip"
                 ref="uploadFile"
                 :auto-upload= "false"
                 :on-success="uploadFileSuccess"
@@ -186,7 +186,8 @@ export default {
     //添加压缩包
     uploadFileChange(file,fileList) {
       if (file.status == 'ready') {
-        if (file.size > 50 * 1024) {
+        window.console.log(file);
+        if (file.size > 50 * 1024 * 1024) {
           this.$confirm('请选择不超过50M大小的压缩包文件!','提示',{
             type: 'warning',
             showConfirmButton: false,
